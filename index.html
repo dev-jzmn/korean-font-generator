@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>내 손글씨 한글 폰트 만들기</title>
+<style>
+:root{--bg:#faf9f6;--fg:#1d1c1a;--mute:#6b6962;--card:#fff;--line:#dcd9d0;--acc:#2a5bd7;--acc-fg:#fff;--tint:#e3ebff;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#171716;--fg:#ecebe6;--mute:#9a978e;--card:#232321;--line:#3a3935;--acc:#7a9cff;--acc-fg:#10131c;--tint:#26324f}}
+:root[data-theme="dark"]{--bg:#171716;--fg:#ecebe6;--mute:#9a978e;--card:#232321;--line:#3a3935;--acc:#7a9cff;--acc-fg:#10131c;--tint:#26324f}
+html{scroll-padding-top:env(safe-area-inset-top,0px);-webkit-text-size-adjust:100%}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:"Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",system-ui,sans-serif;line-height:1.5}
+main{max-width:860px;margin:0 auto;padding:18px 14px 60px}
+h1{font-size:1.35rem;margin:0 0 4px}h2{font-size:1.02rem;margin:0 0 8px}
+.sub,.note{color:var(--mute);font-size:.86rem;margin:4px 0}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:14px}
+label{font-size:.85rem;color:var(--mute);display:block;margin-bottom:4px}
+input[type=text],textarea{width:100%;font:inherit;font-size:1.05rem;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--fg)}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:10px}
+button{font:inherit;font-size:.95rem;min-height:40px;padding:6px 14px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--fg);cursor:pointer}
+button.pri{background:var(--acc);color:var(--acc-fg);border-color:var(--acc)}
+button:disabled{opacity:.5}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 10px}
+.chip{min-width:44px;min-height:44px;padding:4px 10px;font-size:1.15rem}
+.chip.done{background:var(--tint)}
+.chip.need{border-color:var(--acc);border-width:2px}
+.chip.sel{background:var(--acc);color:var(--acc-fg);border-color:var(--acc)}
+.chip.miss{opacity:.55}
+.chip.part{font-size:.9rem}
+#pad{display:block;width:100%;max-width:560px;aspect-ratio:1;margin:8px auto;border-radius:10px;border:1px solid var(--line);background:#fff;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;cursor:crosshair}
+#sp{width:120px;height:120px;border-radius:8px;border:1px solid var(--line);background:#fff;flex:0 0 auto}
+.chk{display:inline-flex;gap:6px;align-items:center;font-size:.88rem;color:var(--fg);margin:0}
+#preview{font-size:2rem;min-height:3rem;word-break:break-all;margin-top:8px}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<main>
+<div id="startup" role="status" class="panel" style="border-color:#b87821">
+<strong>브라우저에서 열어 주세요 / Open in a web browser</strong>
+<p>이 안내가 계속 보이고 자모가 나타나지 않으면 현재 파일 미리보기에서 JavaScript가 실행되지 않는 것입니다. GitHub Pages 등으로 공개한 웹 주소를 Safari 또는 Chrome에서 열어 주세요.</p>
+<p>If this notice stays visible and the letters do not appear, this file preview may not run JavaScript. Open the published website in Safari or Chrome.</p>
+</div>
+<div class="row" style="justify-content:flex-end;margin:0 0 12px"><button id="lang" type="button" aria-label="Switch language">English</button></div>
+<h1><span data-ko="내 손글씨 한글 폰트 만들기" data-en="Create Your Own Handwritten Korean Font">내 손글씨 한글 폰트 만들기</span></h1>
+<p class="sub"><span data-ko="자모를 쓰면 위치에 맞게 조합되어 한글 폰트(.ttf)가 만들어집니다. 모든 획은 같은 굵기의 벡터가 됩니다." data-en="Draw Hangul letters (jamo) to combine them into Korean syllables and create a TrueType font (.ttf). All strokes become vector outlines of uniform width.">자모를 쓰면 위치에 맞게 조합되어 한글 폰트(.ttf)가 만들어집니다. 모든 획은 같은 굵기의 벡터가 됩니다.</span></p>
+
+<section class="panel">
+  <h2><span data-ko="1. 문장 입력" data-en="1. Enter Korean text">1. 문장 입력</span></h2>
+  <p class="note" data-ko="한글을 입력하거나 붙여 넣으세요. 전체 기본 자모를 쓰면 현대 한글 11,172자를 조합할 수 있습니다." data-en="Type or paste Korean text (or use the sample below). Draw all basic consonants and vowels to generate all 11,172 modern Hangul syllables. English letters are not generated.">한글을 입력하거나 붙여 넣으세요. 전체 기본 자모를 쓰면 현대 한글 11,172자를 조합할 수 있습니다.</p>
+  <textarea id="txt" rows="2">다람쥐 헌 쳇바퀴 타고파</textarea>
+  <div class="row"><label class="chk"><input type="checkbox" id="only" checked> <span data-ko="문장에 필요한 자모만 보기" data-en="Show only letters needed for this text">문장에 필요한 자모만 보기</span></label>
+  <button id="allj" type="button"><span data-ko="자모 전체 보기" data-en="Show all Hangul letters">자모 전체 보기</span></button></div>
+  <p class="note"><span data-ko="문장에 쓰인 글자를 만들려면 어떤 자모가 필요한지 파란 테두리로 표시됩니다." data-en="Blue outlines indicate the Hangul letters needed to build the syllables in your text.">문장에 쓰인 글자를 만들려면 어떤 자모가 필요한지 파란 테두리로 표시됩니다.</span></p>
+</section>
+
+<section class="panel">
+  <h2><span data-ko="2. 기본 자모 쓰기" data-en="2. Draw basic Hangul letters">2. 기본 자모 쓰기</span></h2>
+  <label><span data-ko="초성(자음)" data-en="Initial consonants (choseong)">초성(자음)</span></label><div class="chips" id="bi"></div>
+  <label><span data-ko="모음" data-en="Vowels (jungseong)">모음</span></label><div class="chips" id="bv"></div>
+  <p class="note" id="title" style="font-weight:600;color:var(--fg)"></p>
+  <canvas id="pad" width="1000" height="1000"></canvas>
+  <p class="note" id="hint">위에서 자모를 선택하세요.</p>
+  <div class="row">
+    <button id="un" type="button"><span data-ko="되돌리기" data-en="Undo">되돌리기</span></button>
+    <button id="cl" type="button"><span data-ko="지우기" data-en="Clear">지우기</span></button>
+    <button id="nx" class="pri" type="button"><span data-ko="다음 안 쓴 칸 →" data-en="Next undrawn letter →">다음 안 쓴 칸 →</span></button>
+    <label class="chk"><input type="checkbox" id="gd" checked> <span data-ko="가이드 글자" data-en="Show guide letter">가이드 글자</span></label>
+    <label class="chk"><input type="checkbox" id="pm" checked> <span data-ko="펜슬 쓸 때 손가락 무시" data-en="Ignore finger touches after pen use">펜슬 쓸 때 손가락 무시</span></label>
+  </div>
+  <div class="row"><label for="w" style="margin:0"><span data-ko="획 굵기" data-en="Stroke width">획 굵기</span> <span id="wv"></span></label>
+  <input type="range" id="w" min="20" max="120" value="60" style="flex:1 1 160px"></div>
+</section>
+
+<section class="panel">
+  <h2><span data-ko="3. 글자별로 다듬기 (선택)" data-en="3. Customize syllables (optional)">3. 글자별로 다듬기 (선택)</span></h2>
+  <p class="note"><span data-ko="글자를 누르면 그 안의 부품 칸이 나옵니다. 같은 ㄱ이라도 강의 ㄱ(큰 칸)과 닭의 ㄱ(받침 오른쪽 작은 칸)을 따로 쓸 수 있어요. 안 쓰면 기본 글자가 자동 배치됩니다." data-en="Select a syllable to see its components. For example, you can draw ㄱ separately as the large initial consonant in 강 or the small right-hand final consonant in 닭. If you skip a component, your basic letter is automatically fitted into its region.">글자를 누르면 그 안의 부품 칸이 나옵니다. 같은 ㄱ이라도 <b>강</b>의 ㄱ(큰 칸)과 <b>닭</b>의 ㄱ(받침 오른쪽 작은 칸)을 따로 쓸 수 있어요. 안 쓰면 기본 글자가 자동 배치됩니다.</span></p>
+  <div class="chips" id="syls"></div>
+  <div class="row" id="sbox" hidden><canvas id="sp" width="240" height="240"></canvas><div class="chips" id="sparts" style="flex:1 1 200px"></div></div>
+</section>
+
+<section class="panel">
+  <h2><span data-ko="4. 폰트 만들기" data-en="4. Create your font">4. 폰트 만들기</span></h2>
+  <div class="row">
+    <div style="flex:1 1 200px"><label for="fn"><span data-ko="폰트 이름 (영문)" data-en="Font name (Latin letters)">폰트 이름 (영문)</span></label><input type="text" id="fn" value="MyHandwriting"></div>
+    <button id="build" class="pri" type="button" style="align-self:flex-end"><span data-ko="폰트 만들기" data-en="Generate font">폰트 만들기</span></button>
+    <button id="dl" type="button" disabled style="align-self:flex-end"><span data-ko=".ttf 다운로드" data-en="Download .ttf">.ttf 다운로드</span></button>
+  </div>
+  <div id="preview"></div>
+  <p class="note" id="msg"></p>
+</section>
+</main>
+
+<script>
+(function(){
+"use strict";
+var data={};
+var CHO="ㄱㄲㄴㄷㄸㄹㅁㅂㅃㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎ",JUNG="ㅏㅐㅑㅒㅓㅔㅕㅖㅗㅘㅙㅚㅛㅜㅝㅞㅟㅠㅡㅢㅣ";
+var JONG=["","ㄱ","ㄲ","ㄳ","ㄴ","ㄵ","ㄶ","ㄷ","ㄹ","ㄺ","ㄻ","ㄼ","ㄽ","ㄾ","ㄿ","ㅀ","ㅁ","ㅂ","ㅄ","ㅅ","ㅆ","ㅇ","ㅈ","ㅊ","ㅋ","ㅌ","ㅍ","ㅎ"];
+var DBL={"ㄳ":"ㄱㅅ","ㄵ":"ㄴㅈ","ㄶ":"ㄴㅎ","ㄺ":"ㄹㄱ","ㄻ":"ㄹㅁ","ㄼ":"ㄹㅂ","ㄽ":"ㄹㅅ","ㄾ":"ㄹㅌ","ㄿ":"ㄹㅍ","ㅀ":"ㄹㅎ","ㅄ":"ㅂㅅ"};
+var VT=[];for(var q=0;q<21;q++)VT.push([8,12,13,17,18].indexOf(q)>=0?"H":([9,10,11,14,15,16,19].indexOf(q)>=0?"M":"V"));
+// 영역: [x,y,w,h] (0~1, 위가 0)
+var R={Vn:{I:[.03,.06,.5,.88],V:[.55,.04,.42,.92]},Vf:{I:[.03,.05,.5,.55],V:[.55,.03,.42,.6]},
+ Hn:{I:[.18,.05,.64,.45],V:[.04,.55,.92,.4]},Hf:{I:[.18,.04,.64,.3],V:[.04,.36,.92,.26]},
+ Mn:{I:[.03,.05,.45,.45],V:[.03,.03,.94,.92]},Mf:{I:[.03,.04,.45,.34],V:[.03,.03,.94,.6]},
+ F:[.08,.66,.84,.3],FL:[.06,.66,.44,.3],FR:[.5,.66,.44,.3]};
+
+function split(ch){var c=ch.charCodeAt(0)-0xAC00;if(ch.length!=1||c<0||c>=11172)return null;return{c:Math.floor(c/588),v:Math.floor((c%588)/28),f:c%28}}
+function partsOf(ch){var s=split(ch);if(!s)return null;var T=VT[s.v],f=s.f?"f":"n",L=R[T+f],P=[],c=CHO[s.c],v=JUNG[s.v];
+ P.push({id:"I:"+c+":"+T+f,base:"I:"+c,reg:L.I,name:c+" 초성"});
+ P.push({id:"V:"+v+":"+f,base:"V:"+v,reg:L.V,name:v+" 모음"});
+ if(s.f){var j=JONG[s.f];if(DBL[j]){var a=DBL[j][0],b=DBL[j][1];
+  P.push({id:"FL:"+a,base:"I:"+a,reg:R.FL,name:a+" 받침(왼쪽)"});P.push({id:"FR:"+b,base:"I:"+b,reg:R.FR,name:b+" 받침(오른쪽)"})}
+  else P.push({id:"F:"+j,base:"I:"+j,reg:R.F,name:j+" 받침"})}
+ return P}
+function fit(st,r){return st.map(function(s){return s.map(function(p){return [r[0]+p[0]*r[2],r[1]+p[1]*r[3]]})})}
+function has(k){return data[k]&&data[k].length>0}
+function resolve(p){if(has(p.id))return{st:data[p.id],own:true};if(has(p.base))return{st:fit(data[p.base],p.reg),own:false};return null}
+function flat(rs){return rs.reduce(function(a,r){return a.concat(r.st)},[])}
+function autoSyl(ch){var ps=partsOf(ch);if(!ps)return null;var rs=ps.map(resolve);return rs.every(Boolean)?flat(rs):null}
+function sylStrokes(ch){return has("S:"+ch)?data["S:"+ch]:autoSyl(ch)}
+
+function W(){var a=[],o={a:a,u8:function(v){a.push(v&255)},u16:function(v){a.push((v>>8)&255,v&255)},i16:function(v){o.u16(v&65535)},
+ u32:function(v){a.push((v>>>24)&255,(v>>>16)&255,(v>>>8)&255,v&255)},pad:function(){while(a.length%4)a.push(0)}};return o}
+function smooth(p){for(var k=0;k<2;k++){var q=[p[0]];for(var i=1;i<p.length-1;i++)q.push([(p[i-1][0]+p[i][0]*2+p[i+1][0])/4,(p[i-1][1]+p[i][1]*2+p[i+1][1])/4]);if(p.length>1)q.push(p[p.length-1]);p=q}return p}
+function rdp(p,e){if(p.length<3)return p;var a=p[0],b=p[p.length-1],dx=b[0]-a[0],dy=b[1]-a[1],L=Math.hypot(dx,dy),mi=0,md=-1;
+ for(var i=1;i<p.length-1;i++){var d=L?Math.abs(dy*(p[i][0]-a[0])-dx*(p[i][1]-a[1]))/L:Math.hypot(p[i][0]-a[0],p[i][1]-a[1]);if(d>md){md=d;mi=i}}
+ if(md>e){var l=rdp(p.slice(0,mi+1),e),r=rdp(p.slice(mi),e);return l.slice(0,-1).concat(r)}return [a,b]}
+function circle(c,r){var o=[];for(var i=0;i<14;i++){var t=i/14*Math.PI*2;o.push([c[0]+r*Math.cos(t),c[1]+r*Math.sin(t)])}return o.reverse()}
+function capsule(a,b,r){var th=Math.atan2(b[1]-a[1],b[0]-a[0]),o=[],n=6,i,t;
+ for(i=0;i<=n;i++){t=th-Math.PI/2+Math.PI*i/n;o.push([b[0]+r*Math.cos(t),b[1]+r*Math.sin(t)])}
+ for(i=0;i<=n;i++){t=th+Math.PI/2+Math.PI*i/n;o.push([a[0]+r*Math.cos(t),a[1]+r*Math.sin(t)])}
+ return o.reverse()}
+function toContours(strokes,r){var out=[];
+ strokes.forEach(function(s){var p=rdp(smooth(s),0.005).map(function(q){return [q[0]*1000,880-q[1]*1000]});
+  if(p.length<2||(p.length==2&&Math.hypot(p[1][0]-p[0][0],p[1][1]-p[0][1])<1)){out.push(circle(p[0],r));return}
+  for(var i=0;i<p.length-1;i++)out.push(capsule(p[i],p[i+1],r))});
+ return out.map(function(c){return c.map(function(q){return [Math.round(q[0]),Math.round(q[1])]})})}
+
+function sum(b){var s=0;for(var i=0;i<b.length;i+=4)s=(s+(((b[i]<<24)|(b[i+1]<<16)|(b[i+2]<<8)|b[i+3])>>>0))>>>0;return s}
+function utf16(s){var o=[];for(var i=0;i<s.length;i++){var c=s.charCodeAt(i);o.push(c>>8,c&255)}return o}
+function buildTTF(gs,cm,family){
+ var n=gs.length,T={},w,i,gl=new W(),loca=[0],hm=new W(),bb=[],np=[],nc=[];
+ var maxP=0,maxC=0,maxCP=0,maxCC=0,maxE=0,advMax=0,X0=1e9,Y0=1e9,X1=-1e9,Y1=-1e9;
+ gs.forEach(function(g,gi){var box=null;
+  if(g.comp){var xm=1e9,ym=1e9,xM=-1e9,yM=-1e9,p=0,c=0;
+   g.comp.forEach(function(k){var b=bb[k];if(b){xm=Math.min(xm,b[0]);ym=Math.min(ym,b[1]);xM=Math.max(xM,b[2]);yM=Math.max(yM,b[3])}p+=np[k];c+=nc[k]});
+   box=[xm,ym,xM,yM];gl.i16(-1);box.forEach(function(v){gl.i16(v)});
+   g.comp.forEach(function(k,j){gl.u16(j<g.comp.length-1?0x23:0x03);gl.u16(k);gl.i16(0);gl.i16(0)});gl.pad();
+   np[gi]=p;nc[gi]=c;maxCP=Math.max(maxCP,p);maxCC=Math.max(maxCC,c);maxE=Math.max(maxE,g.comp.length);
+  }else{var pts=[],ends=[];g.c.forEach(function(c){c.forEach(function(p){pts.push(p)});ends.push(pts.length-1)});
+   np[gi]=pts.length;nc[gi]=ends.length;
+   if(pts.length){var xs=pts.map(function(p){return p[0]}),ys=pts.map(function(p){return p[1]});
+    box=[Math.min.apply(null,xs),Math.min.apply(null,ys),Math.max.apply(null,xs),Math.max.apply(null,ys)];
+    gl.i16(ends.length);box.forEach(function(v){gl.i16(v)});ends.forEach(function(e){gl.u16(e)});gl.u16(0);
+    pts.forEach(function(p,k){gl.u8(k==0?0x41:0x01)});
+    var px=0;pts.forEach(function(p){gl.i16(p[0]-px);px=p[0]});var py=0;pts.forEach(function(p){gl.i16(p[1]-py);py=p[1]});
+    gl.pad();maxP=Math.max(maxP,pts.length);maxC=Math.max(maxC,ends.length)}}
+  if(box){X0=Math.min(X0,box[0]);Y0=Math.min(Y0,box[1]);X1=Math.max(X1,box[2]);Y1=Math.max(Y1,box[3])}
+  bb[gi]=box;loca.push(gl.a.length);hm.u16(g.adv);hm.i16(box?box[0]:0);advMax=Math.max(advMax,g.adv)});
+ T.glyf=gl.a;w=new W();loca.forEach(function(v){w.u32(v)});T.loca=w.a;T.hmtx=hm.a;
+ if(X0>X1){X0=Y0=X1=Y1=0}
+ w=new W();w.u32(0x00010000);w.u32(0x00010000);w.u32(0);w.u32(0x5F0F3CF5);w.u16(3);w.u16(1000);w.u32(0);w.u32(0xDB000000);w.u32(0);w.u32(0xDB000000);
+ w.i16(X0);w.i16(Y0);w.i16(X1);w.i16(Y1);w.u16(0);w.u16(8);w.i16(2);w.i16(1);w.i16(0);T.head=w.a;
+ w=new W();w.u32(0x00010000);w.i16(880);w.i16(-120);w.i16(0);w.u16(advMax);w.i16(0);w.i16(0);w.i16(X1);w.i16(1);w.i16(0);w.i16(0);
+ for(i=0;i<4;i++)w.i16(0);w.i16(0);w.u16(n);T.hhea=w.a;
+ w=new W();w.u32(0x00010000);w.u16(n);w.u16(maxP);w.u16(maxC);w.u16(maxCP);w.u16(maxCC);w.u16(2);for(i=0;i<6;i++)w.u16(0);w.u16(maxE);w.u16(maxE?1:0);T.maxp=w.a;
+ cm.sort(function(a,b){return a[0]-b[0]});
+ var segs=[];cm.forEach(function(p){var l=segs[segs.length-1];if(l&&p[0]==l.e+1&&p[1]==l.g+(p[0]-l.s))l.e=p[0];else segs.push({s:p[0],e:p[0],g:p[1]})});
+ var sc=segs.length+1;if(16+sc*8>65535)throw new Error("cmap too large");
+ w=new W();w.u16(3);w.i16(800);w.u16(400);w.u16(5);w.u16(0);
+ [650,600,0,75,650,600,0,350,50,300].forEach(function(v){w.i16(v)});w.i16(0);for(i=0;i<10;i++)w.u8(0);
+ w.u32(1);w.u32(0x01100000);w.u32(0);w.u32(0);w.u8(0x4E);w.u8(0x4F);w.u8(0x4E);w.u8(0x45);
+ w.u16(0x40);w.u16(cm[0][0]);w.u16(cm[cm.length-1][0]);w.i16(880);w.i16(-120);w.i16(0);w.u16(880);w.u16(120);w.u32(0x00080001);w.u32(0);
+ w.i16(500);w.i16(700);w.u16(0);w.u16(32);w.u16(0);T.os2=w.a;
+ w=new W();w.u16(0);w.u16(2);w.u16(0);w.u16(3);w.u32(20);w.u16(3);w.u16(1);w.u32(20);
+ var es=Math.pow(2,Math.floor(Math.log2(sc)));
+ w.u16(4);w.u16(16+sc*8);w.u16(0);w.u16(sc*2);w.u16(es*2);w.u16(Math.log2(es));w.u16(sc*2-es*2);
+ segs.forEach(function(s){w.u16(s.e)});w.u16(0xFFFF);w.u16(0);
+ segs.forEach(function(s){w.u16(s.s)});w.u16(0xFFFF);
+ segs.forEach(function(s){w.u16((s.g-s.s)&65535)});w.u16(1);
+ for(i=0;i<sc;i++)w.u16(0);T.cmap=w.a;
+ var ps=family.replace(/[^A-Za-z0-9]/g,"")||"MyFont";
+ var strs=[[1,family],[2,"Regular"],[3,ps+"-1.0"],[4,family],[5,"Version 1.0"],[6,ps+"-Regular"]];
+ w=new W();w.u16(0);w.u16(strs.length);w.u16(6+strs.length*12);var off=0,body=[];
+ strs.forEach(function(s){var u=utf16(s[1]);w.u16(3);w.u16(1);w.u16(0x409);w.u16(s[0]);w.u16(u.length);w.u16(off);off+=u.length;body=body.concat(u)});
+ body.forEach(function(b){w.u8(b)});T.name=w.a;
+ w=new W();w.u32(0x00030000);w.u32(0);w.i16(-75);w.i16(50);for(i=0;i<5;i++)w.u32(0);T.post=w.a;
+ var order=[["OS/2","os2"],["cmap","cmap"],["glyf","glyf"],["head","head"],["hhea","hhea"],["hmtx","hmtx"],["loca","loca"],["maxp","maxp"],["name","name"],["post","post"]];
+ var nt=order.length,sr=16*Math.pow(2,Math.floor(Math.log2(nt))),out=new W();
+ out.u32(0x00010000);out.u16(nt);out.u16(sr);out.u16(Math.floor(Math.log2(nt)));out.u16(nt*16-sr);
+ var pos=12+nt*16,tabs=[];
+ order.forEach(function(t){var b=T[t[1]].slice();while(b.length%4)b.push(0);tabs.push({tag:t[0],b:b,len:T[t[1]].length,off:pos});pos+=b.length});
+ tabs.forEach(function(t){for(i=0;i<4;i++)out.u8(t.tag.charCodeAt(i));out.u32(sum(t.b));out.u32(t.off);out.u32(t.len)});
+ var all=out.a;tabs.forEach(function(t){for(i=0;i<t.b.length;i++)all.push(t.b[i])});
+ var adj=(0xB1B0AFBA-sum(all))>>>0,ho=tabs.filter(function(t){return t.tag=="head"})[0].off+8;
+ all[ho]=adj>>>24;all[ho+1]=(adj>>>16)&255;all[ho+2]=(adj>>>8)&255;all[ho+3]=adj&255;
+ return new Uint8Array(all)}
+
+function makeFont(fam,wFrac){
+ var r=wFrac*500,memo={},cm=[[32,1]],cnt=0;
+ var gs=[{adv:1000,c:[[[60,-60],[60,820],[940,820],[940,-60]].reverse(),[[110,-10],[890,-10],[890,770],[110,770]]]},{adv:400,c:[]}];
+ function simple(st){gs.push({adv:1000,c:toContours(st,r)});return gs.length-1}
+ function comp(p,st){if(memo[p.id]===undefined)memo[p.id]=simple(st);return memo[p.id]}
+ (CHO+JUNG).split("").forEach(function(j){var k=(CHO.indexOf(j)>=0?"I:":"V:")+j;if(has(k)){cm.push([j.charCodeAt(0),simple(data[k])]);cnt++}});
+ for(var code=0;code<11172;code++){var ch=String.fromCharCode(0xAC00+code);
+  if(has("S:"+ch)){cm.push([0xAC00+code,simple(data["S:"+ch])]);cnt++;continue}
+  var ps=partsOf(ch),rs=ps.map(resolve);if(!rs.every(Boolean))continue;
+  var ids=ps.map(function(p,i){return comp(p,rs[i].st)});gs.push({adv:1000,comp:ids});cm.push([0xAC00+code,gs.length-1]);cnt++}
+ return {bytes:buildTTF(gs,cm,fam),count:cnt}}
+/*UI*/
+var $=function(i){return document.getElementById(i)};
+var cur=null,selSyl=null,NEED={},SYL=[],pen=false,drawing=null,fontBytes=null,PS=1000,pad=$("pad");
+
+var lang="ko";try{lang=localStorage.getItem("hfm-language")||"ko"}catch(e){}
+if(lang!=="en")lang="ko";
+var translations={" — 기본 글자": " — Basic letter", "칸 전체를 써서 쓰세요. 다른 위치(작은 칸)에는 자동으로 크기와 위치가 맞춰져 들어갑니다.": "Draw using the whole canvas. Your letter will be automatically resized and positioned in smaller regions.", " 안의 ": " — ", " 초성": " initial consonant", " 모음": " vowel", " 받침(왼쪽)": " final consonant (left)", " 받침(오른쪽)": " final consonant (right)", " 받침": " final consonant", "파란 상자 안에만 쓰세요. 이 글자의 이 위치에서만 이 모양이 쓰입니다. 안 쓰면 연한 파란색(기본 글자 자동 배치)이 쓰입니다.": "Draw only inside the blue box. This shape is used for the matching component position. If left blank, the pale blue automatically fitted basic letter is used.", "통째로 쓰기": "Draw entire syllable", "글자 전체를 직접 씁니다. 이 글자만 조합 대신 쓴 모양이 사용됩니다.": "Draw the entire syllable yourself. Only this syllable will use your custom drawing instead of combined letters.", "자모를 더 써 주세요": "Draw more letters", "보이는 기본 자모를 모두 썼어요! 아래에서 폰트를 만들 수 있어요.": "All visible basic letters are drawn! You can generate your font below.", "폰트 생성 중 오류: ": "Font generation error: ", "아직 만들 수 있는 글자가 없어요. 문장에 필요한 자모(파란 테두리)를 먼저 써 주세요.": "No glyphs can be generated yet. Draw the required letters (outlined in blue) first.", " (미리보기는 표시하지 못했지만 파일은 저장할 수 있어요.)": " (Preview could not be displayed, but the file can still be saved.)", "저장하지 못했어요: ": "Could not save: ", "위에서 자모를 선택하세요.": "Select a Hangul letter above."};
+function tr(s){if(lang!=="en")return s; if(Object.prototype.hasOwnProperty.call(translations,s))return translations[s];
+ s=s.replace(/글자 ([\d,.]+)개가 들어간 폰트를 만들었어요 \(([\d]+)KB\)\. 쓴 자모로 조합 가능한 글자만 포함됩니다\./g,"Created a font with $1 glyphs ($2 KB). Only letters and syllables supported by your drawings are included.");
+ Object.keys(translations).sort(function(a,b){return b.length-a.length}).forEach(function(k){s=s.split(k).join(translations[k])});return s}
+var hintText="위에서 자모를 선택하세요.",msgText="";
+function setHint(s){hintText=s;$("hint").textContent=tr(s)}
+function setMsg(s){msgText=s;$("msg").textContent=tr(s)}
+function applyLanguage(){document.documentElement.lang=lang;document.title=lang==="en"?"Create Your Own Handwritten Korean Font":"내 손글씨 한글 폰트 만들기";
+ document.querySelectorAll("[data-ko][data-en]").forEach(function(el){el.textContent=el.dataset[lang]});
+ $("lang").textContent=lang==="ko"?"English":"한국어";$("lang").setAttribute("aria-label",lang==="ko"?"Switch to English":"한국어로 전환");
+ $("title").textContent=cur?tr(cur.title):"";setHint(hintText);setMsg(msgText);if(selSyl)showSyl(selSyl);drawPad();}
+$("lang").onclick=function(){lang=lang==="ko"?"en":"ko";try{localStorage.setItem("hfm-language",lang)}catch(e){}applyLanguage()};
+
+function strokeW(){return +$("w").value/1000}
+function line(x,st,col,w,S){x.strokeStyle=col;x.fillStyle=col;x.lineWidth=w;x.lineCap="round";x.lineJoin="round";
+ st.forEach(function(s){if(s.length==1){x.beginPath();x.arc(s[0][0]*S,s[0][1]*S,w/2,0,7);x.fill();return}
+  x.beginPath();x.moveTo(s[0][0]*S,s[0][1]*S);for(var i=1;i<s.length;i++)x.lineTo(s[i][0]*S,s[i][1]*S);x.stroke()})}
+function drawPad(){var x=pad.getContext("2d");x.setLineDash([]);x.fillStyle="#fff";x.fillRect(0,0,PS,PS);if(!cur)return;
+ x.lineWidth=2;x.strokeStyle="#d5d3ca";x.setLineDash([10,8]);x.beginPath();x.moveTo(PS/2,0);x.lineTo(PS/2,PS);x.moveTo(0,PS/2);x.lineTo(PS,PS/2);x.stroke();
+ if(cur.reg){var r=cur.reg;x.fillStyle="rgba(42,91,215,.07)";x.fillRect(r[0]*PS,r[1]*PS,r[2]*PS,r[3]*PS);x.strokeStyle="#2a5bd7";x.lineWidth=4;x.strokeRect(r[0]*PS,r[1]*PS,r[2]*PS,r[3]*PS)}
+ else{x.strokeStyle="#aaa";x.lineWidth=2;x.strokeRect(.04*PS,.04*PS,.92*PS,.92*PS)}
+ x.setLineDash([]);
+ if($("gd").checked&&cur.ghost){x.fillStyle="rgba(100,100,100,.16)";x.font=(PS*.8)+"px 'Apple SD Gothic Neo','Noto Sans KR','Malgun Gothic',sans-serif";x.textAlign="center";x.textBaseline="middle";x.fillText(cur.ghost,PS/2,PS*.54)}
+ var w=strokeW()*PS;
+ if(cur.ctx)cur.ctx().forEach(function(st){line(x,st,"#b9b7ae",w,PS)});
+ if(!has(cur.id)&&cur.auto){var a=cur.auto();if(a)line(x,a,"rgba(42,91,215,.35)",w,PS)}
+ line(x,data[cur.id]||[],"#111",w,PS)}
+function pt(e){var r=pad.getBoundingClientRect();return [Math.round(Math.min(1,Math.max(0,(e.clientX-r.left)/r.width))*1e4)/1e4,Math.round(Math.min(1,Math.max(0,(e.clientY-r.top)/r.height))*1e4)/1e4]}
+pad.addEventListener("pointerdown",function(e){if(!cur||drawing)return;if(e.pointerType==="pen")pen=true;
+ if(e.pointerType==="touch"&&pen&&$("pm").checked)return;
+ e.preventDefault();try{pad.setPointerCapture(e.pointerId)}catch(_){}
+ drawing={id:e.pointerId,s:[pt(e)]};(data[cur.id]=data[cur.id]||[]).push(drawing.s);drawPad()});
+pad.addEventListener("pointermove",function(e){if(!drawing||e.pointerId!==drawing.id)return;e.preventDefault();
+ var ev=e.getCoalescedEvents?e.getCoalescedEvents():[];if(!ev.length)ev=[e];
+ ev.forEach(function(c){var p=pt(c),l=drawing.s[drawing.s.length-1];if(Math.hypot(p[0]-l[0],p[1]-l[1])>.002)drawing.s.push(p)});drawPad()});
+function up(e){if(drawing&&e.pointerId===drawing.id){drawing=null;changed()}}
+pad.addEventListener("pointerup",up);pad.addEventListener("pointercancel",up);
+pad.addEventListener("touchstart",function(e){e.preventDefault()},{passive:false});
+pad.addEventListener("contextmenu",function(e){e.preventDefault()});
+
+function mkChip(label,id,fn,cls){var b=document.createElement("button");b.type="button";b.className="chip "+(cls||"");b.dataset.id=id;b.textContent=label;b.onclick=fn;return b}
+function baseItem(key,j){return{id:key,title:j+" — 기본 글자",hint:"칸 전체를 써서 쓰세요. 다른 위치(작은 칸)에는 자동으로 크기와 위치가 맞춰져 들어갑니다.",reg:null,ghost:j}}
+function partItem(ch,p){return{id:p.id,title:ch+" 안의 "+p.name,hint:"파란 상자 안에만 쓰세요. 이 글자의 이 위치에서만 이 모양이 쓰입니다. 안 쓰면 연한 파란색(기본 글자 자동 배치)이 쓰입니다.",reg:p.reg,ghost:ch,
+ ctx:function(){var o=[];partsOf(ch).forEach(function(q){if(q.id!==p.id){var r=resolve(q);if(r)o.push(r.st)}});return o},
+ auto:function(){return has(p.base)?fit(data[p.base],p.reg):null}}}
+function wholeItem(ch){return{id:"S:"+ch,title:ch+" — 통째로 쓰기",hint:"글자 전체를 직접 씁니다. 이 글자만 조합 대신 쓴 모양이 사용됩니다.",reg:null,ghost:ch,auto:function(){return autoSyl(ch)}}}
+function select(it){cur=it;$("title").textContent=tr(it.title);setHint(it.hint);refreshChips();drawPad()}
+function refreshChips(){document.querySelectorAll(".chip[data-id]").forEach(function(c){var id=c.dataset.id;c.classList.toggle("done",has(id));c.classList.toggle("sel",!!cur&&cur.id===id)});
+ document.querySelectorAll("#syls .chip").forEach(function(c){var ch=c.dataset.ch;c.classList.toggle("miss",!sylStrokes(ch));c.classList.toggle("done",!!sylStrokes(ch));c.classList.toggle("sel",ch===selSyl)})}
+function drawSylPrev(){var c=$("sp"),x=c.getContext("2d"),S=c.width;x.setLineDash([]);x.fillStyle="#fff";x.fillRect(0,0,S,S);
+ var st=selSyl&&sylStrokes(selSyl);
+ if(st)line(x,st,"#111",strokeW()*S,S);else{x.fillStyle="#888";x.font="26px sans-serif";x.textAlign="center";x.font=lang==="en"?"20px sans-serif":"26px sans-serif";x.fillText(tr("자모를 더 써 주세요"),S/2,S/2)}}
+function showSyl(ch){selSyl=ch;$("sbox").hidden=false;var box=$("sparts");box.innerHTML="";
+ partsOf(ch).forEach(function(p){box.appendChild(mkChip(tr(p.name),p.id,function(){select(partItem(ch,p))},"part"))});
+ box.appendChild(mkChip(tr("통째로 쓰기"),"S:"+ch,function(){select(wholeItem(ch))},"part"));
+ drawSylPrev();refreshChips()}
+function analyze(){var seen={},syl=[],need={};
+ Array.from($("txt").value).forEach(function(ch){if(seen[ch])return;seen[ch]=1;var ps=partsOf(ch);
+  if(ps){syl.push(ch);ps.forEach(function(p){need[p.base]=1})}else if(CHO.indexOf(ch)>=0)need["I:"+ch]=1;else if(JUNG.indexOf(ch)>=0)need["V:"+ch]=1});
+ NEED=need;SYL=syl;renderBase();var box=$("syls");box.innerHTML="";
+ syl.forEach(function(ch){var b=mkChip(ch,"",function(){showSyl(ch)});b.removeAttribute("data-id");b.dataset.ch=ch;box.appendChild(b)});
+ if(selSyl&&syl.indexOf(selSyl)<0){selSyl=null;$("sbox").hidden=true}
+ refreshChips()}
+var showAll=false;
+function renderBase(){var any=Object.keys(NEED).length>0,only=$("only").checked&&any&&!showAll;
+ [["bi",CHO,"I:"],["bv",JUNG,"V:"]].forEach(function(g){var box=$(g[0]);box.innerHTML="";
+  g[1].split("").forEach(function(j){var k=g[2]+j,b=mkChip(j,k,function(){select(baseItem(k,j))},NEED[k]?"need":"");if(only&&!NEED[k])b.hidden=true;box.appendChild(b)})});refreshChips()}
+var st;function save(){clearTimeout(st);st=setTimeout(function(){try{localStorage.setItem("hfm2",JSON.stringify({d:data,w:$("w").value,t:$("txt").value}))}catch(e){}},400)}
+function load(){try{var j=JSON.parse(localStorage.getItem("hfm2")||"null");if(j){data=j.d||{};$("w").value=j.w||60;if(j.t)$("txt").value=j.t}}catch(e){}}
+function changed(){drawPad();refreshChips();if(selSyl)drawSylPrev();save()}
+
+$("un").onclick=function(){if(cur&&data[cur.id]){data[cur.id].pop();changed()}};
+$("cl").onclick=function(){if(cur){data[cur.id]=[];changed()}};
+$("nx").onclick=function(){var cs=Array.prototype.filter.call(document.querySelectorAll("#bi .chip,#bv .chip"),function(c){return !c.hidden});
+ var i=cs.findIndex(function(c){return cur&&c.dataset.id===cur.id});
+ for(var t=1;t<=cs.length;t++){var c=cs[(i+t+cs.length)%cs.length];if(!has(c.dataset.id)){c.click();return}}
+ setHint("보이는 기본 자모를 모두 썼어요! 아래에서 폰트를 만들 수 있어요.")};
+$("gd").onchange=drawPad;
+$("w").oninput=function(){$("wv").textContent=(+$("w").value/10).toFixed(1)+"%";drawPad();if(selSyl)drawSylPrev();save()};
+$("txt").oninput=function(){analyze();save()};
+$("only").onchange=function(){showAll=false;renderBase()};
+$("allj").onclick=function(){showAll=true;$("only").checked=false;renderBase()};
+$("build").onclick=function(){var fam=$("fn").value.trim()||"MyHandwriting",res;
+ try{res=makeFont(fam,strokeW())}catch(e){setMsg("폰트 생성 중 오류: "+e.message);return}
+ if(!res.count){setMsg("아직 만들 수 있는 글자가 없어요. 문장에 필요한 자모(파란 테두리)를 먼저 써 주세요.");return}
+ fontBytes=res.bytes;$("dl").disabled=false;
+ setMsg("글자 "+res.count.toLocaleString("en-US")+"개가 들어간 폰트를 만들었어요 ("+Math.round(fontBytes.length/1024)+"KB). 쓴 자모로 조합 가능한 글자만 포함됩니다.");
+ var pv=$("preview"),nm="PV"+Date.now();pv.textContent=$("txt").value;
+ try{new FontFace(nm,fontBytes.buffer.slice(0)).load().then(function(f){document.fonts.add(f);pv.style.fontFamily=nm+",sans-serif"}).catch(function(){setMsg(msgText+" (미리보기는 표시하지 못했지만 파일은 저장할 수 있어요.)")})}catch(e){}};
+$("dl").onclick=async function(){if(!fontBytes)return;
+ var fn=($("fn").value.trim().replace(/[^A-Za-z0-9_-]/g,"")||"MyHandwriting")+".ttf";
+ try{var a=document.createElement("a");a.href=URL.createObjectURL(new Blob([fontBytes],{type:"font/ttf"}));a.download=fn;document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(a.href)},30000)}catch(e){setMsg("저장하지 못했어요: "+e.message)}};
+load();$("wv").textContent=(+$("w").value/10).toFixed(1)+"%";analyze();applyLanguage();
+var first=document.querySelector("#bi .chip:not([hidden]),#bv .chip:not([hidden])");if(first)first.click();
+$("startup").hidden=true;
+})();
+</script>
+</body>
+</html>
