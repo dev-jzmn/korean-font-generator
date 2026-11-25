@@ -32,7 +32,7 @@ button:disabled{opacity:.5}
 #pad{display:block;width:100%;max-width:560px;aspect-ratio:1;margin:8px auto;border-radius:10px;border:1px solid var(--line);background:#fff;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;cursor:crosshair}
 #sp{width:120px;height:120px;border-radius:8px;border:1px solid var(--line);background:#fff;flex:0 0 auto}
 .chk{display:inline-flex;gap:6px;align-items:center;font-size:.88rem;color:var(--fg);margin:0}
-#preview{font-size:2rem;min-height:3rem;word-break:break-all;margin-top:8px}
+#preview{white-space:pre-wrap;font-size:2rem;min-height:3rem;word-break:break-all;margin-top:8px}
 [hidden]{display:none!important}
 </style>
 </head>
@@ -50,16 +50,19 @@ button:disabled{opacity:.5}
 <section class="panel">
   <h2><span data-ko="1. 문장 입력" data-en="1. Enter Korean text">1. 문장 입력</span></h2>
   <p class="note" data-ko="한글을 입력하거나 붙여 넣으세요. 전체 기본 자모를 쓰면 현대 한글 11,172자를 조합할 수 있습니다." data-en="Type or paste Korean text (or use the sample below). Draw all basic consonants and vowels to generate all 11,172 modern Hangul syllables. English letters are not generated.">한글을 입력하거나 붙여 넣으세요. 전체 기본 자모를 쓰면 현대 한글 11,172자를 조합할 수 있습니다.</p>
-  <textarea id="txt" rows="2">다람쥐 헌 쳇바퀴 타고파</textarea>
+  <textarea id="txt" rows="2">다람쥐 헌 쳇바퀴를 타고파</textarea>
   <div class="row"><label class="chk"><input type="checkbox" id="only" checked> <span data-ko="문장에 필요한 자모만 보기" data-en="Show only letters needed for this text">문장에 필요한 자모만 보기</span></label>
   <button id="allj" type="button"><span data-ko="자모 전체 보기" data-en="Show all Hangul letters">자모 전체 보기</span></button></div>
   <p class="note"><span data-ko="문장에 쓰인 글자를 만들려면 어떤 자모가 필요한지 파란 테두리로 표시됩니다." data-en="Blue outlines indicate the Hangul letters needed to build the syllables in your text.">문장에 쓰인 글자를 만들려면 어떤 자모가 필요한지 파란 테두리로 표시됩니다.</span></p>
 </section>
 
 <section class="panel">
-  <h2><span data-ko="2. 기본 자모 쓰기" data-en="2. Draw basic Hangul letters">2. 기본 자모 쓰기</span></h2>
+  <h2><span data-ko="2. 자모·숫자·기호 쓰기" data-en="2. Draw Hangul, digits & symbols">2. 자모·숫자·기호 쓰기</span></h2>
   <label><span data-ko="초성(자음)" data-en="Initial consonants (choseong)">초성(자음)</span></label><div class="chips" id="bi"></div>
   <label><span data-ko="모음" data-en="Vowels (jungseong)">모음</span></label><div class="chips" id="bv"></div>
+  <label><span data-ko="숫자" data-en="Digits">숫자</span></label><div class="chips" id="digits"></div>
+  <label><span data-ko="기호" data-en="Symbols & punctuation">기호</span></label><div class="chips" id="symbols"></div>
+  <p class="note"><span data-ko="숫자와 기호는 각각 직접 쓰며, 작성한 것만 폰트에 포함됩니다." data-en="Draw digits and symbols individually. Only those you draw are included in the font.">숫자와 기호는 각각 직접 쓰며, 작성한 것만 폰트에 포함됩니다.</span></p>
   <p class="note" id="title" style="font-weight:600;color:var(--fg)"></p>
   <canvas id="pad" width="1000" height="1000"></canvas>
   <p class="note" id="hint">위에서 자모를 선택하세요.</p>
@@ -72,6 +75,9 @@ button:disabled{opacity:.5}
   </div>
   <div class="row"><label for="w" style="margin:0"><span data-ko="획 굵기" data-en="Stroke width">획 굵기</span> <span id="wv"></span></label>
   <input type="range" id="w" min="20" max="120" value="60" style="flex:1 1 160px"></div>
+<div class="row"><label for="gw"><span data-ko="한글 가로폭" data-en="Hangul width">한글 가로폭</span> <span id="gwv"></span></label><input id="gw" type="range" min="50" max="125" value="100" style="flex:1"></div>
+  <div class="row"><label for="sw"><span data-ko="숫자·기호 가로폭" data-en="Digit & symbol width">숫자·기호 가로폭</span> <span id="swv"></span></label><input id="sw" type="range" min="30" max="125" value="65" style="flex:1"></div>
+  <p class="note"><span data-ko="100%는 정사각형, 70%는 세로로 긴 글자입니다. 쓰기판과 실제 폰트의 가로폭이 함께 바뀝니다." data-en="100% is square; 70% makes tall, narrow letters. Both the drawing area and exported font width change.">100%는 정사각형, 70%는 세로로 긴 글자입니다. 쓰기판과 실제 폰트의 가로폭이 함께 바뀝니다.</span></p>
 </section>
 
 <section class="panel">
@@ -97,6 +103,7 @@ button:disabled{opacity:.5}
 (function(){
 "use strict";
 var data={};
+var DIGITS="0123456789", SYMBOLS="!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~₩€£¥·…‘’“”–—※○●★☆♡♥「」『』〈〉《》";
 var CHO="ㄱㄲㄴㄷㄸㄹㅁㅂㅃㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎ",JUNG="ㅏㅐㅑㅒㅓㅔㅕㅖㅗㅘㅙㅚㅛㅜㅝㅞㅟㅠㅡㅢㅣ";
 var JONG=["","ㄱ","ㄲ","ㄳ","ㄴ","ㄵ","ㄶ","ㄷ","ㄹ","ㄺ","ㄻ","ㄼ","ㄽ","ㄾ","ㄿ","ㅀ","ㅁ","ㅂ","ㅄ","ㅅ","ㅆ","ㅇ","ㅈ","ㅊ","ㅋ","ㅌ","ㅍ","ㅎ"];
 var DBL={"ㄳ":"ㄱㅅ","ㄵ":"ㄴㅈ","ㄶ":"ㄴㅎ","ㄺ":"ㄹㄱ","ㄻ":"ㄹㅁ","ㄼ":"ㄹㅂ","ㄽ":"ㄹㅅ","ㄾ":"ㄹㅌ","ㄿ":"ㄹㅍ","ㅀ":"ㄹㅎ","ㅄ":"ㅂㅅ"};
@@ -164,7 +171,7 @@ function buildTTF(gs,cm,family){
  if(X0>X1){X0=Y0=X1=Y1=0}
  w=new W();w.u32(0x00010000);w.u32(0x00010000);w.u32(0);w.u32(0x5F0F3CF5);w.u16(3);w.u16(1000);w.u32(0);w.u32(0xDB000000);w.u32(0);w.u32(0xDB000000);
  w.i16(X0);w.i16(Y0);w.i16(X1);w.i16(Y1);w.u16(0);w.u16(8);w.i16(2);w.i16(1);w.i16(0);T.head=w.a;
- w=new W();w.u32(0x00010000);w.i16(880);w.i16(-120);w.i16(0);w.u16(advMax);w.i16(0);w.i16(0);w.i16(X1);w.i16(1);w.i16(0);w.i16(0);
+ w=new W();w.u32(0x00010000);w.i16(880);w.i16(-120);w.i16(0);w.u16(advMax);w.i16(Math.min.apply(null,bb.map(function(b){return b?b[0]:0})));w.i16(Math.min.apply(null,bb.map(function(b,i){return b?gs[i].adv-b[2]:gs[i].adv})));w.i16(X1);w.i16(1);w.i16(0);w.i16(0);
  for(i=0;i<4;i++)w.i16(0);w.i16(0);w.u16(n);T.hhea=w.a;
  w=new W();w.u32(0x00010000);w.u16(n);w.u16(maxP);w.u16(maxC);w.u16(maxCP);w.u16(maxCC);w.u16(2);for(i=0;i<6;i++)w.u16(0);w.u16(maxE);w.u16(maxE?1:0);T.maxp=w.a;
  cm.sort(function(a,b){return a[0]-b[0]});
@@ -199,16 +206,17 @@ function buildTTF(gs,cm,family){
  all[ho]=adj>>>24;all[ho+1]=(adj>>>16)&255;all[ho+2]=(adj>>>8)&255;all[ho+3]=adj&255;
  return new Uint8Array(all)}
 
-function makeFont(fam,wFrac){
+function makeFont(fam,wFrac,hangulWidth,otherWidth){
  var r=wFrac*500,memo={},cm=[[32,1]],cnt=0;
  var gs=[{adv:1000,c:[[[60,-60],[60,820],[940,820],[940,-60]].reverse(),[[110,-10],[890,-10],[890,770],[110,770]]]},{adv:400,c:[]}];
- function simple(st){gs.push({adv:1000,c:toContours(st,r)});return gs.length-1}
+ function simple(st,width){width=width||hangulWidth; var c=toContours(st,r).map(function(contour){return contour.map(function(p){return [Math.round(p[0]*width),p[1]]})});gs.push({adv:Math.round(1000*width),c:c});return gs.length-1}
  function comp(p,st){if(memo[p.id]===undefined)memo[p.id]=simple(st);return memo[p.id]}
  (CHO+JUNG).split("").forEach(function(j){var k=(CHO.indexOf(j)>=0?"I:":"V:")+j;if(has(k)){cm.push([j.charCodeAt(0),simple(data[k])]);cnt++}});
+ (DIGITS+SYMBOLS).split("").forEach(function(j){if(has("X:"+j)){cm.push([j.charCodeAt(0),simple(data["X:"+j],otherWidth)]);cnt++}});
  for(var code=0;code<11172;code++){var ch=String.fromCharCode(0xAC00+code);
   if(has("S:"+ch)){cm.push([0xAC00+code,simple(data["S:"+ch])]);cnt++;continue}
   var ps=partsOf(ch),rs=ps.map(resolve);if(!rs.every(Boolean))continue;
-  var ids=ps.map(function(p,i){return comp(p,rs[i].st)});gs.push({adv:1000,comp:ids});cm.push([0xAC00+code,gs.length-1]);cnt++}
+  var ids=ps.map(function(p,i){return comp(p,rs[i].st)});gs.push({adv:Math.round(1000*hangulWidth),comp:ids});cm.push([0xAC00+code,gs.length-1]);cnt++}
  return {bytes:buildTTF(gs,cm,fam),count:cnt}}
 /*UI*/
 var $=function(i){return document.getElementById(i)};
@@ -216,9 +224,10 @@ var cur=null,selSyl=null,NEED={},SYL=[],pen=false,drawing=null,fontBytes=null,PS
 
 var lang="ko";try{lang=localStorage.getItem("hfm-language")||"ko"}catch(e){}
 if(lang!=="en")lang="ko";
-var translations={" — 기본 글자": " — Basic letter", "칸 전체를 써서 쓰세요. 다른 위치(작은 칸)에는 자동으로 크기와 위치가 맞춰져 들어갑니다.": "Draw using the whole canvas. Your letter will be automatically resized and positioned in smaller regions.", " 안의 ": " — ", " 초성": " initial consonant", " 모음": " vowel", " 받침(왼쪽)": " final consonant (left)", " 받침(오른쪽)": " final consonant (right)", " 받침": " final consonant", "파란 상자 안에만 쓰세요. 이 글자의 이 위치에서만 이 모양이 쓰입니다. 안 쓰면 연한 파란색(기본 글자 자동 배치)이 쓰입니다.": "Draw only inside the blue box. This shape is used for the matching component position. If left blank, the pale blue automatically fitted basic letter is used.", "통째로 쓰기": "Draw entire syllable", "글자 전체를 직접 씁니다. 이 글자만 조합 대신 쓴 모양이 사용됩니다.": "Draw the entire syllable yourself. Only this syllable will use your custom drawing instead of combined letters.", "자모를 더 써 주세요": "Draw more letters", "보이는 기본 자모를 모두 썼어요! 아래에서 폰트를 만들 수 있어요.": "All visible basic letters are drawn! You can generate your font below.", "폰트 생성 중 오류: ": "Font generation error: ", "아직 만들 수 있는 글자가 없어요. 문장에 필요한 자모(파란 테두리)를 먼저 써 주세요.": "No glyphs can be generated yet. Draw the required letters (outlined in blue) first.", " (미리보기는 표시하지 못했지만 파일은 저장할 수 있어요.)": " (Preview could not be displayed, but the file can still be saved.)", "저장하지 못했어요: ": "Could not save: ", "위에서 자모를 선택하세요.": "Select a Hangul letter above."};
+var translations={" — 기본 글자": " — Basic letter", "칸 전체를 써서 쓰세요. 다른 위치(작은 칸)에는 자동으로 크기와 위치가 맞춰져 들어갑니다.": "Draw using the whole canvas. Your letter will be automatically resized and positioned in smaller regions.", " 안의 ": " — ", " 초성": " initial consonant", " 모음": " vowel", " 받침(왼쪽)": " final consonant (left)", " 받침(오른쪽)": " final consonant (right)", " 받침": " final consonant", "파란 상자 안에만 쓰세요. 이 글자의 이 위치에서만 이 모양이 쓰입니다. 안 쓰면 연한 파란색(기본 글자 자동 배치)이 쓰입니다.": "Draw only inside the blue box. This shape is used for the matching component position. If left blank, the pale blue automatically fitted basic letter is used.", "통째로 쓰기": "Draw entire syllable", "글자 전체를 직접 씁니다. 이 글자만 조합 대신 쓴 모양이 사용됩니다.": "Draw the entire syllable yourself. Only this syllable will use your custom drawing instead of combined letters.", "자모를 더 써 주세요": "Draw more letters", "보이는 자모·숫자·기호를 모두 썼어요! 아래에서 폰트를 만들 수 있어요.": "All visible letters, digits and symbols are drawn! You can generate your font below.", "폰트 생성 중 오류: ": "Font generation error: ", "아직 만들 수 있는 글자가 없어요. 자모나 숫자·기호를 먼저 써 주세요.": "No glyphs can be generated yet. Draw Hangul letters, digits or symbols first.", " (미리보기는 표시하지 못했지만 파일은 저장할 수 있어요.)": " (Preview could not be displayed, but the file can still be saved.)", "저장하지 못했어요: ": "Could not save: ", "위에서 자모를 선택하세요.": "Select a Hangul letter above."};
+translations["숫자·기호를 칸 안에 직접 쓰세요."]="Draw the digit or symbol inside the canvas.";translations[" — 숫자·기호"]=" — Digit or symbol";
 function tr(s){if(lang!=="en")return s; if(Object.prototype.hasOwnProperty.call(translations,s))return translations[s];
- s=s.replace(/글자 ([\d,.]+)개가 들어간 폰트를 만들었어요 \(([\d]+)KB\)\. 쓴 자모로 조합 가능한 글자만 포함됩니다\./g,"Created a font with $1 glyphs ($2 KB). Only letters and syllables supported by your drawings are included.");
+ s=s.replace(/글자 ([\d,.]+)개가 들어간 폰트를 만들었어요 \(([\d]+)KB\)\. 쓴 자모로 조합 가능한 글자와 직접 쓴 숫자·기호만 포함됩니다\./g,"Created a font with $1 glyphs ($2 KB). Only drawn digits, symbols and supported Hangul letters and syllables are included.");
  Object.keys(translations).sort(function(a,b){return b.length-a.length}).forEach(function(k){s=s.split(k).join(translations[k])});return s}
 var hintText="위에서 자모를 선택하세요.",msgText="";
 function setHint(s){hintText=s;$("hint").textContent=tr(s)}
@@ -233,7 +242,8 @@ function strokeW(){return +$("w").value/1000}
 function line(x,st,col,w,S){x.strokeStyle=col;x.fillStyle=col;x.lineWidth=w;x.lineCap="round";x.lineJoin="round";
  st.forEach(function(s){if(s.length==1){x.beginPath();x.arc(s[0][0]*S,s[0][1]*S,w/2,0,7);x.fill();return}
   x.beginPath();x.moveTo(s[0][0]*S,s[0][1]*S);for(var i=1;i<s.length;i++)x.lineTo(s[i][0]*S,s[i][1]*S);x.stroke()})}
-function drawPad(){var x=pad.getContext("2d");x.setLineDash([]);x.fillStyle="#fff";x.fillRect(0,0,PS,PS);if(!cur)return;
+function widthFor(it){return +(it&&it.id.startsWith("X:")?$("sw").value:$("gw").value)/100}
+function drawPad(){var ratio=widthFor(cur);pad.style.width="min(100%, "+(560*ratio)+"px)";pad.style.aspectRatio=ratio+" / 1";pad.style.height="auto";pad.width=Math.round(PS*ratio);pad.height=PS;var x=pad.getContext("2d");x.setTransform(ratio,0,0,1,0,0);x.setLineDash([]);x.fillStyle="#fff";x.fillRect(0,0,PS,PS);if(!cur)return;
  x.lineWidth=2;x.strokeStyle="#d5d3ca";x.setLineDash([10,8]);x.beginPath();x.moveTo(PS/2,0);x.lineTo(PS/2,PS);x.moveTo(0,PS/2);x.lineTo(PS,PS/2);x.stroke();
  if(cur.reg){var r=cur.reg;x.fillStyle="rgba(42,91,215,.07)";x.fillRect(r[0]*PS,r[1]*PS,r[2]*PS,r[3]*PS);x.strokeStyle="#2a5bd7";x.lineWidth=4;x.strokeRect(r[0]*PS,r[1]*PS,r[2]*PS,r[3]*PS)}
  else{x.strokeStyle="#aaa";x.lineWidth=2;x.strokeRect(.04*PS,.04*PS,.92*PS,.92*PS)}
@@ -257,7 +267,7 @@ pad.addEventListener("touchstart",function(e){e.preventDefault()},{passive:false
 pad.addEventListener("contextmenu",function(e){e.preventDefault()});
 
 function mkChip(label,id,fn,cls){var b=document.createElement("button");b.type="button";b.className="chip "+(cls||"");b.dataset.id=id;b.textContent=label;b.onclick=fn;return b}
-function baseItem(key,j){return{id:key,title:j+" — 기본 글자",hint:"칸 전체를 써서 쓰세요. 다른 위치(작은 칸)에는 자동으로 크기와 위치가 맞춰져 들어갑니다.",reg:null,ghost:j}}
+function baseItem(key,j){if(key.startsWith("X:"))return{id:key,title:j+" — 숫자·기호",hint:"숫자·기호를 칸 안에 직접 쓰세요.",reg:null,ghost:j};return{id:key,title:j+" — 기본 글자",hint:"칸 전체를 써서 쓰세요. 다른 위치(작은 칸)에는 자동으로 크기와 위치가 맞춰져 들어갑니다.",reg:null,ghost:j}}
 function partItem(ch,p){return{id:p.id,title:ch+" 안의 "+p.name,hint:"파란 상자 안에만 쓰세요. 이 글자의 이 위치에서만 이 모양이 쓰입니다. 안 쓰면 연한 파란색(기본 글자 자동 배치)이 쓰입니다.",reg:p.reg,ghost:ch,
  ctx:function(){var o=[];partsOf(ch).forEach(function(q){if(q.id!==p.id){var r=resolve(q);if(r)o.push(r.st)}});return o},
  auto:function(){return has(p.base)?fit(data[p.base],p.reg):null}}}
@@ -265,7 +275,7 @@ function wholeItem(ch){return{id:"S:"+ch,title:ch+" — 통째로 쓰기",hint:"
 function select(it){cur=it;$("title").textContent=tr(it.title);setHint(it.hint);refreshChips();drawPad()}
 function refreshChips(){document.querySelectorAll(".chip[data-id]").forEach(function(c){var id=c.dataset.id;c.classList.toggle("done",has(id));c.classList.toggle("sel",!!cur&&cur.id===id)});
  document.querySelectorAll("#syls .chip").forEach(function(c){var ch=c.dataset.ch;c.classList.toggle("miss",!sylStrokes(ch));c.classList.toggle("done",!!sylStrokes(ch));c.classList.toggle("sel",ch===selSyl)})}
-function drawSylPrev(){var c=$("sp"),x=c.getContext("2d"),S=c.width;x.setLineDash([]);x.fillStyle="#fff";x.fillRect(0,0,S,S);
+function drawSylPrev(){var c=$("sp"),ratio=widthFor(null),S=240;c.width=Math.round(S*ratio);c.height=S;c.style.width=(120*ratio)+"px";var x=c.getContext("2d");x.setTransform(ratio,0,0,1,0,0);x.setLineDash([]);x.fillStyle="#fff";x.fillRect(0,0,S,S);
  var st=selSyl&&sylStrokes(selSyl);
  if(st)line(x,st,"#111",strokeW()*S,S);else{x.fillStyle="#888";x.font="26px sans-serif";x.textAlign="center";x.font=lang==="en"?"20px sans-serif":"26px sans-serif";x.fillText(tr("자모를 더 써 주세요"),S/2,S/2)}}
 function showSyl(ch){selSyl=ch;$("sbox").hidden=false;var box=$("sparts");box.innerHTML="";
@@ -274,41 +284,44 @@ function showSyl(ch){selSyl=ch;$("sbox").hidden=false;var box=$("sparts");box.in
  drawSylPrev();refreshChips()}
 function analyze(){var seen={},syl=[],need={};
  Array.from($("txt").value).forEach(function(ch){if(seen[ch])return;seen[ch]=1;var ps=partsOf(ch);
-  if(ps){syl.push(ch);ps.forEach(function(p){need[p.base]=1})}else if(CHO.indexOf(ch)>=0)need["I:"+ch]=1;else if(JUNG.indexOf(ch)>=0)need["V:"+ch]=1});
+  if(ps){syl.push(ch);ps.forEach(function(p){need[p.base]=1})}else if(CHO.indexOf(ch)>=0)need["I:"+ch]=1;else if(JUNG.indexOf(ch)>=0)need["V:"+ch]=1;else if((DIGITS+SYMBOLS).includes(ch))need["X:"+ch]=1});
  NEED=need;SYL=syl;renderBase();var box=$("syls");box.innerHTML="";
  syl.forEach(function(ch){var b=mkChip(ch,"",function(){showSyl(ch)});b.removeAttribute("data-id");b.dataset.ch=ch;box.appendChild(b)});
  if(selSyl&&syl.indexOf(selSyl)<0){selSyl=null;$("sbox").hidden=true}
  refreshChips()}
 var showAll=false;
 function renderBase(){var any=Object.keys(NEED).length>0,only=$("only").checked&&any&&!showAll;
- [["bi",CHO,"I:"],["bv",JUNG,"V:"]].forEach(function(g){var box=$(g[0]);box.innerHTML="";
-  g[1].split("").forEach(function(j){var k=g[2]+j,b=mkChip(j,k,function(){select(baseItem(k,j))},NEED[k]?"need":"");if(only&&!NEED[k])b.hidden=true;box.appendChild(b)})});refreshChips()}
-var st;function save(){clearTimeout(st);st=setTimeout(function(){try{localStorage.setItem("hfm2",JSON.stringify({d:data,w:$("w").value,t:$("txt").value}))}catch(e){}},400)}
-function load(){try{var j=JSON.parse(localStorage.getItem("hfm2")||"null");if(j){data=j.d||{};$("w").value=j.w||60;if(j.t)$("txt").value=j.t}}catch(e){}}
-function changed(){drawPad();refreshChips();if(selSyl)drawSylPrev();save()}
+ [["bi",CHO,"I:"],["bv",JUNG,"V:"],["digits",DIGITS,"X:"],["symbols",SYMBOLS,"X:"]].forEach(function(g){var box=$(g[0]);box.innerHTML="";
+  g[1].split("").forEach(function(j){var k=g[2]+j,b=mkChip(j,k,function(){select(baseItem(k,j))},NEED[k]?"need":"");if(g[2]!=="X:"&&only&&!NEED[k])b.hidden=true;box.appendChild(b)})});refreshChips()}
+var st;function save(){clearTimeout(st);st=setTimeout(function(){try{localStorage.setItem("hfm2",JSON.stringify({d:data,w:$("w").value,t:$("txt").value,gw:$("gw").value,sw:$("sw").value}))}catch(e){}},400)}
+function load(){try{var j=JSON.parse(localStorage.getItem("hfm2")||"null");if(j){data=j.d||{};$("w").value=j.w||60;if(j.t)$("txt").value=j.t==="다람쥐 헌 쳇바퀴 타고파"?"다람쥐 헌 쳇바퀴를 타고파":j.t;$("gw").value=j.gw||100;$("sw").value=j.sw||65}}catch(e){}}
+function invalidate(){fontBytes=null;$("dl").disabled=true;}
+function changed(){invalidate();drawPad();refreshChips();if(selSyl)drawSylPrev();save()}
 
 $("un").onclick=function(){if(cur&&data[cur.id]){data[cur.id].pop();changed()}};
 $("cl").onclick=function(){if(cur){data[cur.id]=[];changed()}};
-$("nx").onclick=function(){var cs=Array.prototype.filter.call(document.querySelectorAll("#bi .chip,#bv .chip"),function(c){return !c.hidden});
+$("nx").onclick=function(){var cs=Array.prototype.filter.call(document.querySelectorAll("#bi .chip,#bv .chip,#digits .chip,#symbols .chip"),function(c){return !c.hidden});
  var i=cs.findIndex(function(c){return cur&&c.dataset.id===cur.id});
  for(var t=1;t<=cs.length;t++){var c=cs[(i+t+cs.length)%cs.length];if(!has(c.dataset.id)){c.click();return}}
- setHint("보이는 기본 자모를 모두 썼어요! 아래에서 폰트를 만들 수 있어요.")};
+ setHint("보이는 자모·숫자·기호를 모두 썼어요! 아래에서 폰트를 만들 수 있어요.")};
 $("gd").onchange=drawPad;
-$("w").oninput=function(){$("wv").textContent=(+$("w").value/10).toFixed(1)+"%";drawPad();if(selSyl)drawSylPrev();save()};
+function updateWidths(){["gw","sw"].forEach(function(k){$(k+"v").textContent=$(k).value+"%"});drawPad();if(selSyl)drawSylPrev()}
+["gw","sw"].forEach(function(k){$(k).oninput=function(){invalidate();updateWidths();save()}});
+$("w").oninput=function(){invalidate();$("wv").textContent=(+$("w").value/10).toFixed(1)+"%";drawPad();if(selSyl)drawSylPrev();save()};
 $("txt").oninput=function(){analyze();save()};
 $("only").onchange=function(){showAll=false;renderBase()};
 $("allj").onclick=function(){showAll=true;$("only").checked=false;renderBase()};
 $("build").onclick=function(){var fam=$("fn").value.trim()||"MyHandwriting",res;
- try{res=makeFont(fam,strokeW())}catch(e){setMsg("폰트 생성 중 오류: "+e.message);return}
- if(!res.count){setMsg("아직 만들 수 있는 글자가 없어요. 문장에 필요한 자모(파란 테두리)를 먼저 써 주세요.");return}
+ try{res=makeFont(fam,strokeW(),widthFor(null),+$("sw").value/100)}catch(e){setMsg("폰트 생성 중 오류: "+e.message);return}
+ if(!res.count){setMsg("아직 만들 수 있는 글자가 없어요. 자모나 숫자·기호를 먼저 써 주세요.");return}
  fontBytes=res.bytes;$("dl").disabled=false;
- setMsg("글자 "+res.count.toLocaleString("en-US")+"개가 들어간 폰트를 만들었어요 ("+Math.round(fontBytes.length/1024)+"KB). 쓴 자모로 조합 가능한 글자만 포함됩니다.");
- var pv=$("preview"),nm="PV"+Date.now();pv.textContent=$("txt").value;
+ setMsg("글자 "+res.count.toLocaleString("en-US")+"개가 들어간 폰트를 만들었어요 ("+Math.round(fontBytes.length/1024)+"KB). 쓴 자모로 조합 가능한 글자와 직접 쓴 숫자·기호만 포함됩니다.");
+ var pv=$("preview"),nm="PV"+Date.now();pv.textContent=$("txt").value+"\n"+Array.from(DIGITS+SYMBOLS).filter(function(j){return has("X:"+j)}).join(" ");
  try{new FontFace(nm,fontBytes.buffer.slice(0)).load().then(function(f){document.fonts.add(f);pv.style.fontFamily=nm+",sans-serif"}).catch(function(){setMsg(msgText+" (미리보기는 표시하지 못했지만 파일은 저장할 수 있어요.)")})}catch(e){}};
 $("dl").onclick=async function(){if(!fontBytes)return;
  var fn=($("fn").value.trim().replace(/[^A-Za-z0-9_-]/g,"")||"MyHandwriting")+".ttf";
  try{var a=document.createElement("a");a.href=URL.createObjectURL(new Blob([fontBytes],{type:"font/ttf"}));a.download=fn;document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(a.href)},30000)}catch(e){setMsg("저장하지 못했어요: "+e.message)}};
-load();$("wv").textContent=(+$("w").value/10).toFixed(1)+"%";analyze();applyLanguage();
+load();updateWidths();$("wv").textContent=(+$("w").value/10).toFixed(1)+"%";analyze();applyLanguage();
 var first=document.querySelector("#bi .chip:not([hidden]),#bv .chip:not([hidden])");if(first)first.click();
 $("startup").hidden=true;
 })();
